@@ -74,7 +74,7 @@ Fill in the configuration details:
 - **Region**: Choose closest to your users (e.g., US East for US users)
 
 **Build & Deploy Settings:**
-- **Build Command**: `pip install -r requirements.txt`
+- **Build Command**: `pip install -r requirements_render.txt`
 - **Start Command**: `gunicorn wsgi:app`
 - **Plan**: `Free` (for testing)
 
@@ -120,8 +120,8 @@ During deployment, you can monitor the process:
 
 **Common Build Issues & Solutions:**
 
-**Issue**: `ModuleNotFoundError: No module named 'pandas'`
-**Solution**: The build should work with your current `requirements.txt`, but if it fails, Render will show the error in logs.
+**Issue**: `ModuleNotFoundError: No module named 'pandas'` or pandas build errors
+**Solution**: Use `requirements_render.txt` instead of `requirements.txt`. This file contains pandas 1.5.3 which is compatible with Render's Python 3.13 environment.
 
 **Issue**: `ImportError: No module named 'app'`
 **Solution**: Make sure your `wsgi.py` file is in the root directory and properly configured.
@@ -156,7 +156,14 @@ If you encounter issues:
 
 ## 🔧 **Step 6: Troubleshooting Common Issues**
 
-### Issue 1: Application Not Loading
+### Issue 1: Pandas Build Error
+**Symptoms**: Build fails with pandas compilation errors
+**Solutions**:
+1. Use `requirements_render.txt` instead of `requirements.txt`
+2. This file contains pandas 1.5.3 which is compatible with Render's Python 3.13
+3. Update your build command to: `pip install -r requirements_render.txt`
+
+### Issue 2: Application Not Loading
 **Symptoms**: White page or 500 error
 **Solutions**:
 1. Check **"Logs"** tab for error messages
