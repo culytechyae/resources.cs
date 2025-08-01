@@ -34,9 +34,16 @@ This guide will help you deploy the School Resource Management System on PythonA
    source venv/bin/activate
    ```
 
-5. **Install required packages**:
+5. **Install required packages** (use the PythonAnywhere-optimized requirements):
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements_pythonanywhere.txt
+   ```
+   
+   **Note**: If you encounter pandas installation issues, try:
+   ```bash
+   pip install --upgrade pip
+   pip install pandas==1.5.3
+   pip install -r requirements_pythonanywhere.txt
    ```
 
 ## Step 3: Configure Environment Variables
