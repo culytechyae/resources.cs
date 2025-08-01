@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clipboard-list me-2"></i>Manager Requests</h2>
+                <div class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Requests pending your approval
+                </div>
+            </div>
+
+            {% if requests %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-clock me-2"></i>
+                            Pending Approval Requests ({{ requests|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>User</th>
+                                        <th>Items</th>
+                                        <th>Total Cost</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in requests %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ request.id }}</strong>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ request.user.username }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ request.user.email }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ request.items|length }} items</span>
+                                            <button class="btn btn-sm btn-outline-primary ms-2" 
+                                                    onclick="viewRequestItems({{ request.id }})">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <span class="text-success fw-bold">${{ "%.2f"|format(request.total_cost) }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-{{ request.status }}">
+                                                {{ request.status.replace('_', ' ').title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-success btn-sm" 
+                                                        onclick="approveRequest({{ request.id }})">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" 
+                                                        onclick="rejectRequest({{ request.id }})">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                                <button class="btn btn-info btn-sm" 
+                                                        onclick="viewComments({{ request.id }})">
+                                                    <i class="fas fa-comments"></i> Comments
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Pending Requests</h4>
+                    <p class="text-muted">All requests have been processed or are awaiting admin review.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Request Items Modal -->
+<div class="modal fade" id="requestItemsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-list me-2"></i>Request Items
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="requestItemsModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comments Modal -->
+<div class="modal fade" id="commentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-comments me-2"></i>Request Comments
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="commentsModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalTitle">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmationModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-pending_manager_approval {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.status-approved {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.status-delivered {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.status-rejected {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.status-pending {
+    background-color: #6c757d;
+    color: #fff;
+}
+</style>
+
+<script>
+function viewRequestItems(requestId) {
+    // Show loading state
+    document.getElementById('requestItemsModalBody').innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+            <p>Loading request items...</p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('requestItemsModal'));
+    modal.show();
+    
+    // Fetch request items
+    fetch(`/admin/request/${requestId}/items`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                document.getElementById('requestItemsModalBody').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>${data.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            let itemsHtml = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Request #${data.request_id}</strong><br>
+                        <small class="text-muted">By: ${data.user}</small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="status-badge status-${data.status}">${data.status}</span><br>
+                        <small class="text-muted">${data.created_at}</small>
+                    </div>
+                </div>
+                
+                ${data.notes ? `<div class="alert alert-info mb-3"><strong>User Notes:</strong> ${data.notes}</div>` : ''}
+                ${data.admin_notes ? `<div class="alert alert-warning mb-3"><strong>Admin Notes:</strong> ${data.admin_notes}</div>` : ''}
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Cost</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.items.forEach(item => {
+                itemsHtml += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.description || 'N/A'}</td>
+                        <td>${item.quantity}</td>
+                        <td>$${item.cost.toFixed(2)}</td>
+                        <td>$${item.total.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            itemsHtml += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-end">
+                    <strong>Total Cost: $${data.total_cost.toFixed(2)}</strong>
+                </div>
+            `;
+            
+            document.getElementById('requestItemsModalBody').innerHTML = itemsHtml;
+        })
+        .catch(error => {
+            console.error('Error loading request items:', error);
+            let errorMessage = 'Error loading request items';
+            if (error.message) {
+                errorMessage += `: ${error.message}`;
+            }
+            document.getElementById('requestItemsModalBody').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${errorMessage}
+                </div>
+            `;
+        });
+}
+
+function viewComments(requestId) {
+    // Redirect to the comments page
+    window.location.href = `/request/${requestId}/view`;
+}
+
+function approveRequest(requestId) {
+    showConfirmation(
+        'Approve Request',
+        'Are you sure you want to approve this request? This will mark it as approved and notify the user.',
+        () => updateRequestStatus(requestId, 'approve')
+    );
+}
+
+function rejectRequest(requestId) {
+    showConfirmation(
+        'Reject Request',
+        'Are you sure you want to reject this request? This will mark it as rejected and notify the user.',
+        () => updateRequestStatus(requestId, 'reject')
+    );
+}
+
+function showConfirmation(title, message, onConfirm) {
+    document.getElementById('confirmationModalTitle').textContent = title;
+    document.getElementById('confirmationModalBody').textContent = message;
+    
+    const confirmBtn = document.getElementById('confirmActionBtn');
+    confirmBtn.onclick = () => {
+        onConfirm();
+        bootstrap.Modal.getInstance(document.getElementById('confirmationModal')).hide();
+    };
+    
+    const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    modal.show();
+}
+
+function updateRequestStatus(requestId, action) {
+    fetch(`/admin/request/${requestId}/${action}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            // Reload the page to update the list
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert('danger', data.error || 'An error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while processing the request');
+    });
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h2>
+        <p class="text-muted">Manage school resource requests and inventory.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ requests|length }}</div>
+            <div class="stats-label">Total Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ requests|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+            <div class="stats-label">Pending Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ requests|selectattr('status', 'equalto', 'approved')|list|length }}</div>
+            <div class="stats-label">Approved Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ requests|selectattr('status', 'equalto', 'delivered')|list|length }}</div>
+            <div class="stats-label">Delivered Requests</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clipboard-list me-2"></i>Recent Requests
+                </h5>
+                {% if requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Status</th>
+                                    <th>Total Cost</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in requests[:5] %}
+                                <tr>
+                                    <td>#{{ request.id }}</td>
+                                    <td>{{ request.user.username }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ request.status }}">
+                                            {{ request.status.title() }}
+                                        </span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(request.total_cost) }}</td>
+                                    <td>{{ request.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_requests') }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if requests|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('admin_requests') }}" class="btn btn-outline-primary">
+                                View All Requests
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No requests found.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-tasks me-2"></i>Quick Actions
+                </h5>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_requests') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-clipboard-check me-2"></i>Manage Requests
+                    </a>
+                    <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-boxes me-2"></i>View Inventory
+                    </a>
+                    <a href="{{ url_for('reports') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-chart-bar me-2"></i>Generate Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card dashboard-card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>Request Statistics
+                </h5>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-warning">{{ requests|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-success">{{ requests|selectattr('status', 'equalto', 'approved')|list|length }}</div>
+                        <small class="text-muted">Approved</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-danger">{{ requests|selectattr('status', 'equalto', 'rejected')|list|length }}</div>
+                        <small class="text-muted">Rejected</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-primary">{{ requests|selectattr('status', 'equalto', 'delivered')|list|length }}</div>
+                        <small class="text-muted">Delivered</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

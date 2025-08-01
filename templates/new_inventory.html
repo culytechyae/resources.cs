@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Add Inventory Item - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Add New Inventory Item</h3>
+                    <p class="text-muted">Create a new inventory item for the resource management system.</p>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control", placeholder="Enter item name") }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.name.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", placeholder="Enter item description (optional)", rows="3") }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">
+                                {% for error in form.description.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.quantity.label(class="form-label") }}
+                                {{ form.quantity(class="form-control", placeholder="Enter quantity", min="0") }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.quantity.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.cost.label(class="form-label") }}
+                                {{ form.cost(class="form-control", placeholder="Enter cost (e.g., 25.50)", min="0", step="0.01") }}
+                                {% if form.cost.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.cost.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-control", placeholder="Enter category (e.g., Electronics, Office Supplies)") }}
+                        {% if form.category.errors %}
+                            <div class="text-danger">
+                                {% for error in form.category.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Add Item
+                        </button>
+                        <a href="{{ url_for('admin_inventory') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Inventory
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Tips for Adding Items
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="fas fa-check text-success me-2"></i>Use descriptive names for easy identification</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Include detailed descriptions for complex items</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Set accurate costs for budget tracking</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Use categories to organize inventory</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

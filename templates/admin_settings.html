@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-cog fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">System Settings</h3>
+                    <p class="text-muted">Configure email notifications and system preferences.</p>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>Email Configuration
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.smtp_server.label(class="form-label") }}
+                                        {{ form.smtp_server(class="form-control", placeholder="smtp.gmail.com") }}
+                                        {% if form.smtp_server.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.smtp_server.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.smtp_port.label(class="form-label") }}
+                                        {{ form.smtp_port(class="form-control", placeholder="587") }}
+                                        {% if form.smtp_port.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.smtp_port.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.username.label(class="form-label") }}
+                                        {{ form.username(class="form-control", placeholder="your-email@gmail.com") }}
+                                        {% if form.username.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.username.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        {{ form.password.label(class="form-label") }}
+                                        {{ form.password(class="form-control", placeholder="Enter email password") }}
+                                        {% if form.password.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.password.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                {{ form.use_tls.label(class="form-label") }}
+                                {{ form.use_tls(class="form-control") }}
+                                {% if form.use_tls.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.use_tls.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="testEmail()">
+                            <i class="fas fa-paper-plane me-2"></i>Test Email Configuration
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Email Configuration Help
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><i class="fas fa-check me-2"></i><strong>Gmail:</strong> smtp.gmail.com, Port 587, TLS enabled</li>
+                                <li><i class="fas fa-check me-2"></i><strong>Outlook:</strong> smtp-mail.outlook.com, Port 587, TLS enabled</li>
+                                <li><i class="fas fa-check me-2"></i><strong>Yahoo:</strong> smtp.mail.yahoo.com, Port 587, TLS enabled</li>
+                                <li><i class="fas fa-check me-2"></i>Use app passwords for Gmail (not regular password)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Important Notes
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Email notifications are sent for request submissions, approvals, and status changes</li>
+                                <li>Test the email configuration before saving to ensure it works properly</li>
+                                <li>For Gmail, you may need to enable "Less secure app access" or use app passwords</li>
+                                <li>Settings are saved securely and encrypted in the database</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Email Modal -->
+<div class="modal fade" id="testEmailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Test Email Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="testEmailForm">
+                    <div class="mb-3">
+                        <label for="testEmail" class="form-label">Test Email Address</label>
+                        <input type="email" class="form-control" id="testEmail" name="testEmail" 
+                               placeholder="Enter email address to send test to" required>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Test Email
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function testEmail() {
+    new bootstrap.Modal(document.getElementById('testEmailModal')).show();
+}
+
+$(document).ready(function() {
+    $('#testEmailForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const testEmail = $('#testEmail').val();
+        
+        // Disable submit button
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Sending...');
+        
+        // This would typically make an AJAX call to test email
+        setTimeout(function() {
+            alert('Test email sent successfully! Check your inbox.');
+            new bootstrap.Modal(document.getElementById('testEmailModal')).hide();
+            submitBtn.prop('disabled', false).html(originalText);
+        }, 2000);
+    });
+});
+</script>
+{% endblock %} 

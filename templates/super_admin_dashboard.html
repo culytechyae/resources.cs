@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>Super Admin Dashboard</h2>
+        <p class="text-muted">Welcome back! Here's an overview of your system.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_users }}</div>
+            <div class="stats-label">Total Users</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_inventory }}</div>
+            <div class="stats-label">Inventory Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_requests }}</div>
+            <div class="stats-label">Total Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ pending_requests }}</div>
+            <div class="stats-label">Pending Requests</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-users me-2"></i>Quick Actions
+                </h5>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i>Manage Users
+                    </a>
+                    <a href="{{ url_for('admin_inventory') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-boxes me-2"></i>Manage Inventory
+                    </a>
+                    <a href="{{ url_for('upload_inventory') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-upload me-2"></i>Bulk Upload Inventory
+                    </a>
+                    <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-cog me-2"></i>System Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-bar me-2"></i>System Overview
+                </h5>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-center p-3">
+                            <div class="h4 text-success">{{ total_users }}</div>
+                            <small class="text-muted">Active Users</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-3">
+                            <div class="h4 text-primary">{{ total_inventory }}</div>
+                            <small class="text-muted">Items in Stock</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-3">
+                            <div class="h4 text-warning">{{ pending_requests }}</div>
+                            <small class="text-muted">Pending Requests</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-3">
+                            <div class="h4 text-info">{{ total_requests }}</div>
+                            <small class="text-muted">Total Requests</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>System Information
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Recent Activity</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-circle text-success me-2"></i>System running normally</li>
+                            <li><i class="fas fa-circle text-success me-2"></i>Database connected</li>
+                            <li><i class="fas fa-circle text-success me-2"></i>Email service configured</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Quick Links</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="{{ url_for('admin_requests') }}" class="text-decoration-none">
+                                <i class="fas fa-clipboard-list me-2"></i>View All Requests
+                            </a></li>
+                            <li><a href="{{ url_for('reports') }}" class="text-decoration-none">
+                                <i class="fas fa-chart-line me-2"></i>Generate Reports
+                            </a></li>
+                            <li><a href="{{ url_for('new_user') }}" class="text-decoration-none">
+                                <i class="fas fa-user-plus me-2"></i>Add New User
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

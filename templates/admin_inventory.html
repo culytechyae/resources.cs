@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Inventory - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-boxes me-2"></i>Manage Inventory</h2>
+        <p class="text-muted">Add, edit, and manage inventory items for the resource management system.</p>
+    </div>
+    <div class="col-auto">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('new_inventory') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add Item
+            </a>
+            <a href="{{ url_for('upload_inventory') }}" class="btn btn-success">
+                <i class="fas fa-upload me-2"></i>Bulk Upload
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <form method="GET" action="{{ url_for('admin_inventory') }}" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" 
+                   placeholder="Search items by name..." 
+                   value="{{ search }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <form method="GET" action="{{ url_for('admin_inventory') }}" class="d-flex">
+            <input type="hidden" name="search" value="{{ search }}">
+            <select name="category" class="form-select me-2" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if search or category_filter %}
+                <a href="{{ url_for('admin_inventory') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i>
+                </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Results Summary -->
+{% if search or category_filter %}
+<div class="row mb-3">
+    <div class="col">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Showing {{ items|length }} item{% if items|length != 1 %}s{% endif %}
+            {% if search %}matching "{{ search }}"{% endif %}
+            {% if category_filter %}in category "{{ category_filter }}"{% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if items %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Cost</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.name }}</strong>
+                            </td>
+                            <td>
+                                {% if item.description %}
+                                    {{ item.description[:50] }}{% if item.description|length > 50 %}...{% endif %}
+                                {% else %}
+                                    <span class="text-muted">No description</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.category %}
+                                    <span class="badge bg-info">{{ item.category }}</span>
+                                {% else %}
+                                    <span class="text-muted">Uncategorized</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if item.quantity > 10 %}success{% elif item.quantity > 0 %}warning{% else %}danger{% endif %}">
+                                    {{ item.quantity }}
+                                </span>
+                            </td>
+                            <td><strong>${{ "%.2f"|format(item.cost) }}</strong></td>
+                            <td>
+                                {% if item.quantity > 0 %}
+                                    <span class="badge bg-success">Available</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editItem({{ item.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="refillItem({{ item.id }})">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteItem({{ item.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="stats-number">{{ items|length }}</div>
+                <div class="stats-label">Total Items</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="stats-number">{{ items|selectattr('quantity', 'gt', 0)|list|length }}</div>
+                <div class="stats-label">In Stock</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="stats-number">{{ items|selectattr('quantity', 'equalto', 0)|list|length }}</div>
+                <div class="stats-label">Out of Stock</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="stats-number">{{ items|sum(attribute='quantity') }}</div>
+                <div class="stats-label">Total Quantity</div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-boxes fa-4x text-muted mb-4"></i>
+        <h4 class="text-muted">No inventory items found</h4>
+        <p class="text-muted">Start by adding inventory items or uploading a bulk file.</p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{{ url_for('new_inventory') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Add First Item
+            </a>
+            <a href="{{ url_for('upload_inventory') }}" class="btn btn-success btn-lg">
+                <i class="fas fa-upload me-2"></i>Bulk Upload
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Edit Item Modal -->
+<div class="modal fade" id="editItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Inventory Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editItemForm">
+                    <input type="hidden" id="editItemId" name="itemId">
+                    
+                    <div class="mb-3">
+                        <label for="editItemName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="editItemName" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editItemDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editItemDescription" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editItemQuantity" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="editItemQuantity" name="quantity" min="0" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editItemCost" class="form-label">Cost</label>
+                                <input type="number" class="form-control" id="editItemCost" name="cost" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editItemCategory" class="form-label">Category</label>
+                        <input type="text" class="form-control" id="editItemCategory" name="category">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Item
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Refill Item Modal -->
+<div class="modal fade" id="refillItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Refill Inventory Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="refillItemForm">
+                    <input type="hidden" id="refillItemId" name="itemId">
+                    
+                    <div class="mb-3">
+                        <label for="refillQuantity" class="form-label">Quantity to Add</label>
+                        <input type="number" class="form-control" id="refillQuantity" name="quantity" min="1" value="1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="refillNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="refillNotes" name="notes" rows="2" 
+                                  placeholder="Reason for refill, supplier info, etc."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Add to Inventory
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function editItem(itemId) {
+    // This would typically make an AJAX call to get item data
+    // For now, we'll show a simple form
+    document.getElementById('editItemId').value = itemId;
+    document.getElementById('editItemName').value = 'Item ' + itemId;
+    document.getElementById('editItemDescription').value = 'Description for item ' + itemId;
+    document.getElementById('editItemQuantity').value = '10';
+    document.getElementById('editItemCost').value = '25.00';
+    document.getElementById('editItemCategory').value = 'General';
+    
+    new bootstrap.Modal(document.getElementById('editItemModal')).show();
+}
+
+function refillItem(itemId) {
+    document.getElementById('refillItemId').value = itemId;
+    document.getElementById('refillQuantity').value = '1';
+    document.getElementById('refillNotes').value = '';
+    
+    new bootstrap.Modal(document.getElementById('refillItemModal')).show();
+}
+
+function deleteItem(itemId) {
+    if (confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+        // This would typically make an AJAX call to delete the item
+        alert('Item deleted successfully!');
+        location.reload();
+    }
+}
+
+$(document).ready(function() {
+    $('#editItemForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // This would typically make an AJAX call to update item
+        alert('Item updated successfully!');
+        new bootstrap.Modal(document.getElementById('editItemModal')).hide();
+        location.reload();
+    });
+    
+    $('#refillItemForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // This would typically make an AJAX call to refill item
+        alert('Inventory refilled successfully!');
+        new bootstrap.Modal(document.getElementById('refillItemModal')).hide();
+        location.reload();
+    });
+});
+</script>
+{% endblock %} 

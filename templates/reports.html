@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-chart-bar me-2"></i>Reports & Analytics</h2>
+        <p class="text-muted">View comprehensive reports and analytics for resource management.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_requests }}</div>
+            <div class="stats-label">Total Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ pending_requests }}</div>
+            <div class="stats-label">Pending Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ approved_requests }}</div>
+            <div class="stats-label">Approved Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ delivered_requests }}</div>
+            <div class="stats-label">Delivered Requests</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>Request Status Distribution
+                </h5>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-warning">{{ pending_requests }}</div>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-success">{{ approved_requests }}</div>
+                        <small class="text-muted">Approved</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-danger">{{ rejected_requests }}</div>
+                        <small class="text-muted">Rejected</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-primary">{{ delivered_requests }}</div>
+                        <small class="text-muted">Delivered</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-calendar me-2"></i>Monthly Statistics
+                </h5>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-info">{{ monthly_requests }}</div>
+                        <small class="text-muted">This Month</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-secondary">{{ total_requests - monthly_requests }}</div>
+                        <small class="text-muted">Previous Months</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-table me-2"></i>Detailed Reports
+                </h5>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-csv fa-3x text-primary mb-3"></i>
+                                <h6>Request Report</h6>
+                                <p class="text-muted">Export all requests with details</p>
+                                <button class="btn btn-outline-primary btn-sm" onclick="generateReport('requests')">
+                                    <i class="fas fa-download me-2"></i>Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                                <h6>Analytics Report</h6>
+                                <p class="text-muted">View trends and patterns</p>
+                                <button class="btn btn-outline-success btn-sm" onclick="generateReport('analytics')">
+                                    <i class="fas fa-chart-bar me-2"></i>View Analytics
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-boxes fa-3x text-warning mb-3"></i>
+                                <h6>Inventory Report</h6>
+                                <p class="text-muted">Current inventory status</p>
+                                <button class="btn btn-outline-warning btn-sm" onclick="generateReport('inventory')">
+                                    <i class="fas fa-list me-2"></i>View Inventory
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-day fa-3x text-secondary mb-3"></i>
+                                <h6>Daily Transactions</h6>
+                                <p class="text-muted">Day by day transaction report</p>
+                                <a href="{{ url_for('daily_transactions') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-calendar-day me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-warehouse fa-3x text-dark mb-3"></i>
+                                <h6>Stock Report</h6>
+                                <p class="text-muted">Current stock status</p>
+                                <a href="{{ url_for('stock_report') }}" class="btn btn-outline-dark btn-sm">
+                                    <i class="fas fa-warehouse me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                                <h6>Sales Report</h6>
+                                <p class="text-muted">Sales and revenue analysis</p>
+                                <a href="{{ url_for('sales_report') }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-chart-line me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                                <h6>Pending Report</h6>
+                                <p class="text-muted">Pending requests summary</p>
+                                <a href="{{ url_for('pending_report') }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-clock me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-3x text-info mb-3"></i>
+                                <h6>User Summary</h6>
+                                <p class="text-muted">User activity and requests</p>
+                                <a href="{{ url_for('user_summary') }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-users me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-area fa-3x text-primary mb-3"></i>
+                                <h6>Inventory Sales Summary</h6>
+                                <p class="text-muted">Inventory sales analysis</p>
+                                <a href="{{ url_for('inventory_sales_summary') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-chart-area me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-excel fa-3x text-danger mb-3"></i>
+                                <h6>Export All Data</h6>
+                                <p class="text-muted">Export complete system data</p>
+                                <button class="btn btn-outline-danger btn-sm" onclick="exportData()">
+                                    <i class="fas fa-file-excel me-2"></i>Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-database fa-3x text-secondary mb-3"></i>
+                                <h6>Database Stats</h6>
+                                <p class="text-muted">System performance metrics</p>
+                                <a href="{{ url_for('database_stats') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-database me-2"></i>View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock me-2"></i>Recent Activity
+                </h5>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6>Request #123 Approved</h6>
+                            <p class="text-muted">John Doe's request for laptops was approved</p>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-warning"></div>
+                        <div class="timeline-content">
+                            <h6>New Request Submitted</h6>
+                            <p class="text-muted">Jane Smith submitted a request for office supplies</p>
+                            <small class="text-muted">4 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6>Inventory Updated</h6>
+                            <p class="text-muted">Added 50 new whiteboards to inventory</p>
+                            <small class="text-muted">1 day ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-tasks me-2"></i>Quick Actions
+                </h5>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="exportData()">
+                        <i class="fas fa-download me-2"></i>Export All Data
+                    </button>
+                    <button class="btn btn-outline-success" onclick="generateSummary()">
+                        <i class="fas fa-file-alt me-2"></i>Generate Summary Report
+                    </button>
+                    <button class="btn btn-outline-info" onclick="viewTrends()">
+                        <i class="fas fa-chart-line me-2"></i>View Trends
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if top_items %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-star me-2"></i>Top Requested Items
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Total Requested</th>
+                                <th>Current Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_items %}
+                            <tr>
+                                <td><strong>{{ item.name }}</strong></td>
+                                <td>{{ item.total_requested }}</td>
+                                <td>
+                                    {% set inventory_item = item %}
+                                    {% if inventory_item.quantity < 10 %}
+                                        <span class="badge bg-warning">Low Stock</span>
+                                    {% else %}
+                                        <span class="badge bg-success">In Stock</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if monthly_data %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line me-2"></i>Monthly Trends (Last 6 Months)
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Requests</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in monthly_data %}
+                            <tr>
+                                <td>{{ data.month }}</td>
+                                <td>{{ data.count }}</td>
+                                <td>
+                                    {% if data.count > 5 %}
+                                        <span class="text-success"><i class="fas fa-arrow-up"></i> High</span>
+                                    {% elif data.count > 2 %}
+                                        <span class="text-warning"><i class="fas fa-minus"></i> Medium</span>
+                                    {% else %}
+                                        <span class="text-danger"><i class="fas fa-arrow-down"></i> Low</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -35px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.timeline-content p {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.timeline-content small {
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function generateReport(type) {
+    switch(type) {
+        case 'requests':
+            window.location.href = '/reports/export/requests';
+            break;
+        case 'analytics':
+            window.location.href = '/reports/analytics';
+            break;
+        case 'inventory':
+            window.location.href = '/reports/export/inventory';
+            break;
+    }
+}
+
+function exportData() {
+    window.location.href = '/reports/export/all';
+}
+
+function generateSummary() {
+    window.location.href = '/reports/summary';
+}
+
+function viewTrends() {
+    window.location.href = '/reports/analytics';
+}
+</script>
+{% endblock %} 

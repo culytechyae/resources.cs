@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-day me-2"></i>Daily Transactions Report</h2>
+                <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                </a>
+            </div>
+            
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-line me-2"></i>Daily Transaction Summary (Last 30 Days)
+                    </h5>
+                    
+                    {% if daily_data %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Number of Requests</th>
+                                    <th>Total Cost</th>
+                                    <th>Average Cost</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in daily_data %}
+                                <tr>
+                                    <td><strong>{{ data.date }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ data.requests }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(data.total_cost or 0) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if data.requests > 0 %}
+                                            ${{ "%.2f"|format((data.total_cost or 0) / data.requests) }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if data.requests > 5 %}
+                                            <span class="text-success"><i class="fas fa-arrow-up"></i> High Activity</span>
+                                        {% elif data.requests > 2 %}
+                                            <span class="text-warning"><i class="fas fa-minus"></i> Medium Activity</span>
+                                        {% else %}
+                                            <span class="text-danger"><i class="fas fa-arrow-down"></i> Low Activity</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Total Days</h6>
+                                    <h3 class="text-primary">{{ daily_data|length }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Total Requests</h6>
+                                    <h3 class="text-success">{{ daily_data|sum(attribute='requests') }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Total Revenue</h6>
+                                    <h3 class="text-info">${{ "%.2f"|format(daily_data|sum(attribute='total_cost') or 0) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No transaction data available for the last 30 days.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %} 

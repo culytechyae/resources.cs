@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-warehouse me-2"></i>Stock Report</h2>
+                <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                </a>
+            </div>
+            
+            <!-- Low Stock Items -->
+            {% if low_stock_items %}
+            <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Low Stock Items (Less than 10 units)
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-warning table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Cost per Unit</th>
+                                    <th>Total Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_items %}
+                                <tr>
+                                    <td><strong>{{ item.name }}</strong></td>
+                                    <td>{{ item.category or 'Uncategorized' }}</td>
+                                    <td>
+                                        <span class="badge bg-warning">{{ item.quantity }}</span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(item.cost) }}</td>
+                                    <td>${{ "%.2f"|format(item.quantity * item.cost) }}</td>
+                                    <td>
+                                        {% if item.quantity == 0 %}
+                                            <span class="badge bg-danger">Out of Stock</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Low Stock</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Out of Stock Items -->
+            {% if out_of_stock_items %}
+            <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">
+                        <i class="fas fa-times-circle me-2"></i>Out of Stock Items
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-danger table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Cost per Unit</th>
+                                    <th>Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in out_of_stock_items %}
+                                <tr>
+                                    <td><strong>{{ item.name }}</strong></td>
+                                    <td>{{ item.category or 'Uncategorized' }}</td>
+                                    <td>${{ "%.2f"|format(item.cost) }}</td>
+                                    <td>{{ item.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- High Value Items -->
+            {% if high_value_items %}
+            <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="fas fa-star me-2"></i>High Value Items (Top 10 by Total Value)
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-success table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Current Stock</th>
+                                    <th>Cost per Unit</th>
+                                    <th>Total Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in high_value_items %}
+                                <tr>
+                                    <td><strong>{{ item.name }}</strong></td>
+                                    <td>{{ item.category or 'Uncategorized' }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ item.quantity }}</span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(item.cost) }}</td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(item.quantity * item.cost) }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Stock by Category -->
+            {% if stock_by_category %}
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title text-info">
+                        <i class="fas fa-chart-pie me-2"></i>Stock Summary by Category
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-info table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Number of Items</th>
+                                    <th>Total Quantity</th>
+                                    <th>Total Value</th>
+                                    <th>Average Value per Item</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in stock_by_category %}
+                                <tr>
+                                    <td><strong>{{ category.category or 'Uncategorized' }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">{{ category.item_count }}</span>
+                                    </td>
+                                    <td>{{ category.total_quantity }}</td>
+                                    <td>
+                                        <span class="text-info fw-bold">${{ "%.2f"|format(category.total_value or 0) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if category.item_count > 0 %}
+                                            ${{ "%.2f"|format((category.total_value or 0) / category.item_count) }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if not low_stock_items and not out_of_stock_items and not high_value_items and not stock_by_category %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No stock data available.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.875rem;
+}
+
+.table-warning {
+    background-color: #fff3cd;
+}
+
+.table-danger {
+    background-color: #f8d7da;
+}
+
+.table-success {
+    background-color: #d1e7dd;
+}
+
+.table-info {
+    background-color: #d1ecf1;
+}
+</style>
+{% endblock %} 

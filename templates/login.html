@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Login - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-gradient rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user-circle fa-3x text-white"></i>
+                        </div>
+                    </div>
+                    <h3 class="card-title fw-bold text-gray-800 mb-2">Welcome Back</h3>
+                    <p class="text-muted mb-0">Sign in to your account to continue</p>
+                </div>
+                
+                <form method="POST" class="needs-validation" novalidate>
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.username.id }}" class="form-label fw-semibold text-gray-700">
+                            <i class="fas fa-user me-2 text-primary"></i>Username
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-user text-muted"></i>
+                            </span>
+                            {{ form.username(class="form-control border-start-0", placeholder="Enter your username", required=true) }}
+                        </div>
+                        {% if form.username.errors %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.username.errors %}
+                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.password.id }}" class="form-label fw-semibold text-gray-700">
+                            <i class="fas fa-lock me-2 text-primary"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            {{ form.password(class="form-control border-start-0", placeholder="Enter your password", required=true) }}
+                        </div>
+                        {% if form.password.errors %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.password.errors %}
+                                    <small><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center">
+                    <div class="card bg-light border-0">
+                        <div class="card-body p-3">
+                            <h6 class="card-title fw-semibold text-gray-700 mb-2">
+                                <i class="fas fa-info-circle me-2 text-info"></i>Demo Credentials
+                            </h6>
+                            <div class="row text-start">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-primary me-2">Super Admin</span>
+                                        <small class="text-muted">admin / admin123</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        Create more users through admin panel
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .min-vh-100 {
+        min-height: calc(100vh - 200px);
+    }
+    
+    .text-gray-700 {
+        color: var(--gray-700) !important;
+    }
+    
+    .text-gray-800 {
+        color: var(--gray-800) !important;
+    }
+    
+    .input-group-text {
+        border-color: var(--gray-200);
+    }
+    
+    .form-control.border-start-0 {
+        border-left: none;
+    }
+    
+    .input-group-text.border-end-0 {
+        border-right: none;
+    }
+    
+    .card.bg-light {
+        background: linear-gradient(135deg, var(--gray-50), var(--gray-100)) !important;
+    }
+</style>
+{% endblock %} 

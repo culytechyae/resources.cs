@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Home - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="fas fa-school me-3"></i>School Resource Management
+        </h1>
+        <p class="lead mb-4">Efficiently manage and request school resources with our modern platform</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('login') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>Get Started
+            </a>
+        {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <h4>Inventory Management</h4>
+                <p>Browse available resources, check quantities, and add items to your cart with ease.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h4>Request System</h4>
+                <p>Submit resource requests and track their status from pending to delivery.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4>Reports & Analytics</h4>
+                <p>Generate comprehensive reports and view analytics for better resource planning.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-users me-2"></i>For Users
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Browse available resources</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Add items to cart</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Submit requests</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Track request status</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Receive email notifications</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-user-shield me-2"></i>For Administrators
+                    </h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Manage user accounts</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Approve/reject requests</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Update inventory levels</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Generate reports</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Bulk upload inventory</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

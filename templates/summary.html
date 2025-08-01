@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Summary Report - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-file-alt me-2"></i>Summary Report</h2>
+        <p class="text-muted">Comprehensive summary of resource management activities.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_users }}</div>
+            <div class="stats-label">Total Users</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_inventory_items }}</div>
+            <div class="stats-label">Inventory Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_requests }}</div>
+            <div class="stats-label">Total Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">${{ "%.2f"|format(total_inventory_value) }}</div>
+            <div class="stats-label">Inventory Value</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock me-2"></i>Recent Activity (Last 7 Days)
+                </h5>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-primary">{{ recent_requests }}</div>
+                        <small class="text-muted">New Requests</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-success">{{ recent_users }}</div>
+                        <small class="text-muted">New Users</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Alerts & Warnings
+                </h5>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-warning">{{ low_stock_items }}</div>
+                        <small class="text-muted">Low Stock Items</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-info">{{ pending_requests }}</div>
+                        <small class="text-muted">Pending Requests</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>System Overview
+                </h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-primary">User Management</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-users me-2"></i>{{ total_users }} total users</li>
+                            <li><i class="fas fa-user-plus me-2"></i>{{ recent_users }} new users this week</li>
+                            <li><i class="fas fa-user-check me-2"></i>Active user management</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-success">Inventory Management</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-boxes me-2"></i>{{ total_inventory_items }} items in stock</li>
+                            <li><i class="fas fa-dollar-sign me-2"></i>${{ "%.2f"|format(total_inventory_value) }} total value</li>
+                            <li><i class="fas fa-exclamation-triangle me-2"></i>{{ low_stock_items }} items need restocking</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-info">Request Processing</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-clipboard-list me-2"></i>{{ total_requests }} total requests</li>
+                            <li><i class="fas fa-clock me-2"></i>{{ pending_requests }} pending approval</li>
+                            <li><i class="fas fa-chart-line me-2"></i>{{ recent_requests }} requests this week</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-tasks me-2"></i>Recommendations
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if low_stock_items > 0 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Low Stock Alert:</strong> {{ low_stock_items }} items need restocking.
+                        </div>
+                        {% endif %}
+                        
+                        {% if pending_requests > 0 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Pending Requests:</strong> {{ pending_requests }} requests await approval.
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if recent_requests > 0 %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <strong>Activity:</strong> {{ recent_requests }} new requests this week.
+                        </div>
+                        {% endif %}
+                        
+                        {% if total_inventory_value > 10000 %}
+                        <div class="alert alert-primary">
+                            <i class="fas fa-dollar-sign me-2"></i>
+                            <strong>High Value:</strong> Inventory worth ${{ "%.2f"|format(total_inventory_value) }}.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-calendar me-2"></i>Report Summary
+                </h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="h5 text-primary">Generated</div>
+                        <small class="text-muted">{{ moment().format('YYYY-MM-DD HH:mm') }}</small>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="h5 text-success">System Status</div>
+                        <small class="text-muted">Operational</small>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="h5 text-info">Data Points</div>
+                        <small class="text-muted">{{ total_users + total_inventory_items + total_requests }}</small>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="h5 text-warning">Alerts</div>
+                        <small class="text-muted">{{ low_stock_items + pending_requests }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Reports
+            </a>
+            <button class="btn btn-outline-primary" onclick="exportSummary()">
+                <i class="fas fa-download me-2"></i>Export Summary
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function exportSummary() {
+    // Create a simple CSV export of the summary data
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Add headers
+    csvContent += "Metric,Value\n";
+    
+    // Add data
+    csvContent += "Total Users," + {{ total_users }} + "\n";
+    csvContent += "Total Inventory Items," + {{ total_inventory_items }} + "\n";
+    csvContent += "Total Requests," + {{ total_requests }} + "\n";
+    csvContent += "Total Inventory Value,$" + {{ "%.2f"|format(total_inventory_value) }} + "\n";
+    csvContent += "Recent Requests (7 days)," + {{ recent_requests }} + "\n";
+    csvContent += "Recent Users (7 days)," + {{ recent_users }} + "\n";
+    csvContent += "Low Stock Items," + {{ low_stock_items }} + "\n";
+    csvContent += "Pending Requests," + {{ pending_requests }} + "\n";
+    
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "summary_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %} 

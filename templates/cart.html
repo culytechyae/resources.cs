@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Cart - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex align-items-center mb-3">
+            <div class="bg-primary bg-gradient rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                <i class="fas fa-shopping-cart fa-lg text-white"></i>
+            </div>
+            <div>
+                <h2 class="mb-1 fw-bold text-gray-800">My Cart</h2>
+                <p class="text-muted mb-0">Review your selected items and submit your request.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if items %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary bg-gradient text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>Selected Items
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase fw-semibold">Item</th>
+                                    <th class="text-uppercase fw-semibold">Quantity</th>
+                                    <th class="text-uppercase fw-semibold">Unit Cost</th>
+                                    <th class="text-uppercase fw-semibold">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-box text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="text-gray-800">{{ item.name }}</strong>
+                                                {% if item.category %}
+                                                    <br><small class="text-muted">{{ item.category }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary rounded-pill">{{ item.quantity }}</span>
+                                    </td>
+                                    <td class="fw-semibold text-success">${{ "%.2f"|format(item.cost) }}</td>
+                                    <td class="fw-bold text-primary">${{ "%.2f"|format(item.total) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success bg-gradient text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calculator me-2"></i>Order Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted">Total Items:</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="fw-semibold">{{ items|length }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted">Total Quantity:</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="fw-semibold">{{ items|sum(attribute='quantity') }}</span>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <span class="fw-bold text-gray-800">Total Cost:</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="fw-bold text-success fs-4">${{ "%.2f"|format(total) }}</span>
+                        </div>
+                    </div>
+                    
+                    <form id="submitRequestForm">
+                        <div class="mb-4">
+                            <label for="notes" class="form-label fw-semibold text-gray-700">
+                                <i class="fas fa-sticky-note me-2"></i>Additional Notes
+                            </label>
+                            <textarea class="form-control" id="notes" name="notes" rows="4" 
+                                      placeholder="Any special requirements or notes for your request..."></textarea>
+                            <small class="text-muted">Optional: Add any special instructions or requirements.</small>
+                        </div>
+                        
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-success btn-lg fw-semibold">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Request
+                            </button>
+                            <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Add More Items
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <h6 class="text-gray-700 mb-3">Request Process</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-1 text-white"></i>
+                                </div>
+                                <small class="text-muted">Submit</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-warning bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-2 text-white"></i>
+                                </div>
+                                <small class="text-muted">Review</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="bg-success bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-3 text-white"></i>
+                                </div>
+                                <small class="text-muted">Approve</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="fas fa-shopping-cart fa-4x text-muted"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-gray-700 mb-3">Your cart is empty</h4>
+                    <p class="text-muted mb-4">Add some items from the inventory to get started with your request.</p>
+                    <a href="{{ url_for('inventory') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-boxes me-2"></i>Browse Inventory
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<style>
+    .text-gray-700 {
+        color: var(--gray-700) !important;
+    }
+    
+    .text-gray-800 {
+        color: var(--gray-800) !important;
+    }
+    
+    .fs-4 {
+        font-size: 1.5rem !important;
+    }
+    
+    .card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .table th {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+    }
+    
+    .badge.bg-primary {
+        background: var(--gradient-primary) !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#submitRequestForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                notes: $('#notes').val()
+            };
+            
+            $.ajax({
+                url: '/submit-request',
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        showSuccessMessage('Request submitted successfully!');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 2000);
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Error submitting request. Please try again.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

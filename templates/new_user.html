@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Add New User - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Add New User</h3>
+                    <p class="text-muted">Create a new user account for the resource management system.</p>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control", placeholder="Enter username") }}
+                                {% if form.username.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.username.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control", placeholder="Enter email address") }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.email.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control", placeholder="Enter password") }}
+                                {% if form.password.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.password.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.role.label(class="form-label") }}
+                                {{ form.role(class="form-control") }}
+                                {% if form.role.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.role.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        {{ form.school.label(class="form-label") }}
+                        {{ form.school(class="form-control", placeholder="Enter school name (optional)") }}
+                        {% if form.school.errors %}
+                            <div class="text-danger">
+                                {% for error in form.school.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Create User
+                        </button>
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Users
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="mt-4">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Role Descriptions
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>User:</strong> Can browse inventory, submit requests, and track their status</li>
+                                <li><strong>School Admin:</strong> Can manage requests, approve/reject, and view reports</li>
+                                <li><strong>Super Admin:</strong> Full system access including user management and settings</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

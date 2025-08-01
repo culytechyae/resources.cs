@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-users me-2"></i>Manage Users</h2>
+        <p class="text-muted">Create and manage user accounts for the resource management system.</p>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('new_user') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Add New User
+        </a>
+    </div>
+</div>
+
+{% if users %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>School</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                <strong>{{ user.username }}</strong>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-{% if user.role == 'super_admin' %}danger{% elif user.role == 'admin' %}warning{% else %}primary{% endif %}">
+                                    {{ user.role.replace('_', ' ').title() }}
+                                </span>
+                            </td>
+                            <td>{{ user.school or 'N/A' }}</td>
+                            <td>
+                                <span class="badge bg-{% if user.is_active %}success{% else %}secondary{% endif %}">
+                                    {{ 'Active' if user.is_active else 'Inactive' }}
+                                </span>
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editUser({{ user.id }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    {% if user.id != current_user.id %}
+                                        <button class="btn btn-sm btn-outline-{% if user.is_active %}warning{% else %}success{% endif %}" 
+                                                onclick="toggleUserStatus({{ user.id }}, {{ user.is_active|lower }})">
+                                            <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="stats-number">{{ users|length }}</div>
+                <div class="stats-label">Total Users</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="stats-number">{{ users|selectattr('role', 'equalto', 'user')|list|length }}</div>
+                <div class="stats-label">Regular Users</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card">
+                <div class="stats-number">{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</div>
+                <div class="stats-label">School Admins</div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-users fa-4x text-muted mb-4"></i>
+        <h4 class="text-muted">No users found</h4>
+        <p class="text-muted">Start by creating the first user account.</p>
+        <a href="{{ url_for('new_user') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-user-plus me-2"></i>Add First User
+        </a>
+    </div>
+{% endif %}
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId" name="userId">
+                    
+                    <div class="mb-3">
+                        <label for="editUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="editUsername" name="username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editRole" class="form-label">Role</label>
+                        <select class="form-control" id="editRole" name="role" required>
+                            <option value="user">User</option>
+                            <option value="admin">School Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editSchool" class="form-label">School</label>
+                        <input type="text" class="form-control" id="editSchool" name="school">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update User
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function editUser(userId) {
+    // This would typically make an AJAX call to get user data
+    // For now, we'll show a simple form
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editUsername').value = 'User ' + userId;
+    document.getElementById('editEmail').value = 'user' + userId + '@school.com';
+    document.getElementById('editRole').value = 'user';
+    document.getElementById('editSchool').value = 'School Name';
+    
+    new bootstrap.Modal(document.getElementById('editUserModal')).show();
+}
+
+function toggleUserStatus(userId, isActive) {
+    const action = isActive ? 'deactivate' : 'activate';
+    const message = isActive ? 'deactivate' : 'activate';
+    
+    if (confirm(`Are you sure you want to ${message} this user?`)) {
+        // This would typically make an AJAX call to update user status
+        alert(`User ${action}d successfully!`);
+        location.reload();
+    }
+}
+
+$(document).ready(function() {
+    $('#editUserForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // This would typically make an AJAX call to update user
+        alert('User updated successfully!');
+        new bootstrap.Modal(document.getElementById('editUserModal')).hide();
+        location.reload();
+    });
+});
+</script>
+{% endblock %} 

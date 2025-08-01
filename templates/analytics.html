@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-chart-line me-2"></i>Analytics & Trends</h2>
+        <p class="text-muted">Detailed analytics and trend analysis for resource management.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>Request Status Distribution
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set total = status_distribution | sum(attribute='count') %}
+                            {% for status in status_distribution %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if status.status == 'approved' else 'warning' if status.status == 'pending' else 'danger' if status.status == 'rejected' else 'primary' }}">
+                                        {{ status.status.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ status.count }}</td>
+                                <td>{{ "%.1f"|format(status.count / total * 100) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-bar me-2"></i>Monthly Request Trends
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Requests</th>
+                                <th>Total Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trend in monthly_trends %}
+                            <tr>
+                                <td>{{ trend.month }}</td>
+                                <td>{{ trend.count }}</td>
+                                <td>${{ "%.2f"|format(trend.total_cost or 0) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-boxes me-2"></i>Top Requested Items
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Total Requested</th>
+                                <th>Total Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.total_requested }}</td>
+                                <td>${{ "%.2f"|format(item.total_value or 0) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-users me-2"></i>User Activity
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Requests</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in user_activity %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.request_count }}</td>
+                                <td>${{ "%.2f"|format(user.total_spent or 0) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-area me-2"></i>Trend Analysis
+                </h5>
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="h3 text-primary">{{ monthly_trends | length }}</div>
+                        <small class="text-muted">Months of Data</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="h3 text-success">{{ status_distribution | sum(attribute='count') }}</div>
+                        <small class="text-muted">Total Requests</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="h3 text-info">{{ top_items | length }}</div>
+                        <small class="text-muted">Active Items</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Reports
+            </a>
+            <button class="btn btn-outline-primary" onclick="exportAnalytics()">
+                <i class="fas fa-download me-2"></i>Export Analytics
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function exportAnalytics() {
+    // Create a simple CSV export of the analytics data
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Add headers
+    csvContent += "Metric,Value\n";
+    
+    // Add data
+    csvContent += "Total Requests," + {{ status_distribution | sum(attribute='count') }} + "\n";
+    csvContent += "Months of Data," + {{ monthly_trends | length }} + "\n";
+    csvContent += "Active Items," + {{ top_items | length }} + "\n";
+    
+    // Create download link
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "analytics_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+</script>
+{% endblock %} 

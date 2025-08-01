@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Upload Inventory - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-upload fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">Bulk Upload Inventory</h3>
+                    <p class="text-muted">Upload multiple inventory items from an Excel file.</p>
+                </div>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Select Excel File (.xlsx)</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                        <div class="form-text">File must be in Excel format (.xlsx) with columns: name, description, quantity, cost, category</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>Upload Inventory
+                        </button>
+                        <a href="{{ url_for('admin_inventory') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Inventory
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="mt-5">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-info-circle me-2"></i>Excel File Format
+                            </h6>
+                            <p class="card-text">Your Excel file should have the following columns:</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Column</th>
+                                            <th>Description</th>
+                                            <th>Required</th>
+                                            <th>Example</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>name</strong></td>
+                                            <td>Item name</td>
+                                            <td><span class="badge bg-success">Yes</span></td>
+                                            <td>Laptop</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>description</strong></td>
+                                            <td>Item description</td>
+                                            <td><span class="badge bg-secondary">No</span></td>
+                                            <td>Dell Latitude 5520</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>quantity</strong></td>
+                                            <td>Available quantity</td>
+                                            <td><span class="badge bg-success">Yes</span></td>
+                                            <td>5</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>cost</strong></td>
+                                            <td>Item cost</td>
+                                            <td><span class="badge bg-success">Yes</span></td>
+                                            <td>1200.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>category</strong></td>
+                                            <td>Item category</td>
+                                            <td><span class="badge bg-secondary">No</span></td>
+                                            <td>Electronics</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-download me-2"></i>Download Sample Template
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Download a sample Excel template to see the correct format:</p>
+                            <button class="btn btn-outline-primary" onclick="downloadTemplate()">
+                                <i class="fas fa-download me-2"></i>Download Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Tips for Successful Upload</h6>
+                        <ul class="mb-0">
+                            <li>Ensure all required columns are present</li>
+                            <li>Use proper data types (numbers for quantity and cost)</li>
+                            <li>Remove any empty rows or columns</li>
+                            <li>Check that file size is under 16MB</li>
+                            <li>Save file in Excel 2007+ format (.xlsx)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function downloadTemplate() {
+    // Create a sample CSV content
+    const csvContent = "name,description,quantity,cost,category\n" +
+                      "Laptop,Dell Latitude 5520,5,1200.00,Electronics\n" +
+                      "Printer,HP LaserJet Pro,3,450.00,Office Supplies\n" +
+                      "Whiteboard,4x6 feet magnetic,10,85.50,Classroom\n" +
+                      "Projector,Epson PowerLite,2,800.00,Electronics\n" +
+                      "Desk Chair,Ergonomic office chair,15,125.00,Furniture";
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventory_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %} 

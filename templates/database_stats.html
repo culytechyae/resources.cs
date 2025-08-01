@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Database Statistics - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-database me-2"></i>Database Statistics</h2>
+        <p class="text-muted">Monitor database performance and statistics for large datasets.</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ stats.user_count or 0 }}</div>
+            <div class="stats-label">Total Users</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ stats.inventory_count or 0 }}</div>
+            <div class="stats-label">Inventory Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ stats.request_count or 0 }}</div>
+            <div class="stats-label">Total Requests</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ stats.request_item_count or 0 }}</div>
+            <div class="stats-label">Request Items</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-hdd me-2"></i>Storage Information
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr>
+                                <td><strong>Database File Size:</strong></td>
+                                <td>{{ stats.file_size_mb or 0 }} MB</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Index Count:</strong></td>
+                                <td>{{ stats.index_count or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Records:</strong></td>
+                                <td>{{ (stats.user_count or 0) + (stats.inventory_count or 0) + (stats.request_count or 0) + (stats.request_item_count or 0) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line me-2"></i>Performance Metrics
+                </h5>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h4 text-primary">{{ stats.user_count or 0 }}</div>
+                        <small class="text-muted">Users</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-success">{{ stats.inventory_count or 0 }}</div>
+                        <small class="text-muted">Items</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-info">{{ stats.request_count or 0 }}</div>
+                        <small class="text-muted">Requests</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-warning">{{ stats.request_item_count or 0 }}</div>
+                        <small class="text-muted">Items Requested</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-database me-2"></i>Database Redundancy System
+                </h5>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Current Database:</strong> {{ current_db }} | 
+                    <strong>Auto-switching enabled</strong> - System automatically switches to next database when current one reaches 5GB limit.
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Database File</th>
+                                <th>Status</th>
+                                <th>Size</th>
+                                <th>Capacity</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for db_name, db_info in all_db_stats.items() %}
+                            <tr>
+                                <td>
+                                    <strong>{{ db_name }}</strong>
+                                    {% if db_info.is_current %}
+                                        <span class="badge bg-primary ms-2">Current</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if db_info.exists %}
+                                        {% if db_info.is_full %}
+                                            <span class="badge bg-danger">Full</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Not Created</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if db_info.exists %}
+                                        {{ db_info.size_mb }} MB
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if db_info.exists %}
+                                        <div class="progress" style="height: 20px;">
+                                            {% set percentage = (db_info.size_bytes / (5 * 1024 * 1024 * 1024)) * 100 %}
+                                            <div class="progress-bar {% if percentage > 80 %}bg-danger{% elif percentage > 60 %}bg-warning{% else %}bg-success{% endif %}" 
+                                                 style="width: {{ percentage }}%">
+                                                {{ "%.1f"|format(percentage) }}%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">0%</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if db_info.exists %}
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewDatabaseDetails('{{ db_name }}')">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Auto-switching:</strong> When a database reaches 5GB, the system automatically switches to the next available database.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-success">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <strong>Redundancy:</strong> 5 databases provide up to 25GB total storage capacity with automatic failover.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-tools me-2"></i>Database Management
+                </h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-cogs fa-3x text-primary mb-3"></i>
+                                <h6>Optimize Database</h6>
+                                <p class="text-muted">Improve performance for large datasets</p>
+                                <a href="{{ url_for('optimize_database_route') }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-magic me-2"></i>Optimize
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-broom fa-3x text-warning mb-3"></i>
+                                <h6>Cleanup Old Data</h6>
+                                <p class="text-muted">Remove old records to maintain performance</p>
+                                <a href="{{ url_for('cleanup_database') }}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-trash me-2"></i>Cleanup
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-download fa-3x text-success mb-3"></i>
+                                <h6>Export Database</h6>
+                                <p class="text-muted">Backup all data for redundancy</p>
+                                <a href="{{ url_for('export_all_data') }}" class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-download me-2"></i>Export
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-exchange-alt fa-3x text-info mb-3"></i>
+                                <h6>Switch Database</h6>
+                                <p class="text-muted">Manually switch to next database</p>
+                                <a href="{{ url_for('switch_database') }}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-arrow-right me-2"></i>Switch
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>Database Configuration
+                </h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Performance Settings</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check me-2 text-success"></i>WAL Mode Enabled</li>
+                            <li><i class="fas fa-check me-2 text-success"></i>64MB Cache Size</li>
+                            <li><i class="fas fa-check me-2 text-success"></i>Memory Temp Store</li>
+                            <li><i class="fas fa-check me-2 text-success"></i>Foreign Keys Enabled</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-success">Optimization Features</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check me-2 text-success"></i>Composite Indexes</li>
+                            <li><i class="fas fa-check me-2 text-success"></i>Bulk Insert Operations</li>
+                            <li><i class="fas fa-check me-2 text-success"></i>Connection Pooling</li>
+                            <li><i class="fas fa-check me-2 text-success"></i>Query Optimization</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Capacity Planning
+                </h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="h4 text-primary">20,000+</div>
+                            <small class="text-muted">Supported Entries</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="h4 text-success">5GB</div>
+                            <small class="text-muted">Database Capacity</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <div class="h4 text-info">High Performance</div>
+                            <small class="text-muted">Optimized Queries</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Database Optimization:</strong> This system is configured to handle 20,000+ entries and up to 5GB of data with optimized performance through indexing, connection pooling, and bulk operations.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            <button class="btn btn-outline-primary" onclick="refreshStats()">
+                <i class="fas fa-sync me-2"></i>Refresh Statistics
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function refreshStats() {
+    location.reload();
+}
+
+// Auto-refresh stats every 30 seconds
+setInterval(function() {
+    // Only refresh if user is still on the page
+    if (document.visibilityState === 'visible') {
+        refreshStats();
+    }
+}, 30000);
+</script>
+{% endblock %} 

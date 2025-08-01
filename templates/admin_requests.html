@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Requests - School Resource Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2><i class="fas fa-clipboard-list me-2"></i>Manage Requests</h2>
+        <p class="text-muted">Review and manage resource requests from users.</p>
+    </div>
+</div>
+
+{% if requests %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Items</th>
+                            <th>Total Cost</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                        <tr>
+                            <td><strong>#{{ request.id }}</strong></td>
+                            <td>
+                                <div>
+                                    <strong>{{ request.user.username }}</strong><br>
+                                    <small class="text-muted">{{ request.user.email }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-info" onclick="viewRequestItems({{ request.id }})">
+                                        <i class="fas fa-eye me-1"></i>View Items
+                                    </button>
+                                    <a href="{{ url_for('view_request_comments', request_id=request.id) }}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-comments me-1"></i>Comments
+                                    </a>
+                                </div>
+                            </td>
+                            <td><strong>${{ "%.2f"|format(request.total_cost) }}</strong></td>
+                            <td>
+                                <span class="status-badge status-{{ request.status }}">
+                                    {% if request.status == 'pending_manager_approval' %}
+                                        Pending Manager Approval
+                                    {% else %}
+                                        {{ request.status.title() }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                {% if request.status == 'pending' %}
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-success" onclick="updateRequestStatus({{ request.id }}, 'approve')">
+                                            <i class="fas fa-check me-1"></i>Approve
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" onclick="sendToManager({{ request.id }})">
+                                            <i class="fas fa-user-tie me-1"></i>Send to Manager
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="updateRequestStatus({{ request.id }}, 'reject')">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </button>
+                                    </div>
+                                {% elif request.status == 'pending_manager_approval' %}
+                                    <span class="text-muted">Awaiting manager approval</span>
+                                {% elif request.status == 'approved' %}
+                                    <button class="btn btn-sm btn-primary" onclick="updateRequestStatus({{ request.id }}, 'deliver')">
+                                        <i class="fas fa-truck me-1"></i>Mark Delivered
+                                    </button>
+                                {% else %}
+                                    <span class="text-muted">No actions available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-clipboard-list fa-4x text-muted mb-4"></i>
+        <h4 class="text-muted">No requests found</h4>
+        <p class="text-muted">There are currently no resource requests to manage.</p>
+    </div>
+{% endif %}
+
+<!-- Request Items Modal -->
+<div class="modal fade" id="requestItemsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="requestItemsModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Request Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <input type="hidden" id="requestId" name="requestId">
+                    <input type="hidden" id="action" name="action">
+                    
+                    <div class="mb-3">
+                        <label for="adminNotes" class="form-label">Admin Notes (Optional)</label>
+                        <textarea class="form-control" id="adminNotes" name="adminNotes" rows="3" 
+                                  placeholder="Add any notes about this decision..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Status
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewRequestItems(requestId) {
+    // Show loading state
+    document.getElementById('requestItemsModalBody').innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+            <p>Loading request items...</p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('requestItemsModal'));
+    modal.show();
+    
+    // Fetch request items
+    fetch(`/admin/request/${requestId}/items`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                document.getElementById('requestItemsModalBody').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>${data.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            let itemsHtml = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Request #${data.request_id}</strong><br>
+                        <small class="text-muted">By: ${data.user}</small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <span class="status-badge status-${data.status}">${data.status}</span><br>
+                        <small class="text-muted">${data.created_at}</small>
+                    </div>
+                </div>
+                
+                ${data.notes ? `<div class="alert alert-info mb-3"><strong>User Notes:</strong> ${data.notes}</div>` : ''}
+                ${data.admin_notes ? `<div class="alert alert-warning mb-3"><strong>Admin Notes:</strong> ${data.admin_notes}</div>` : ''}
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Cost</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.items.forEach(item => {
+                itemsHtml += `
+                    <tr data-item-id="${item.id}">
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.description || '-'}</td>
+                        <td>
+                            <div class="input-group input-group-sm" style="width: 120px;">
+                                <input type="number" class="form-control quantity-input" 
+                                       value="${item.quantity}" min="1" max="${item.available_quantity + item.quantity}"
+                                       data-item-id="${item.id}" data-request-id="${data.request_id}">
+                                <button class="btn btn-outline-primary btn-sm update-quantity-btn" 
+                                        data-item-id="${item.id}" data-request-id="${data.request_id}">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Available: ${item.available_quantity}</small>
+                        </td>
+                        <td>$${item.cost.toFixed(2)}</td>
+                        <td>$${item.total.toFixed(2)}</td>
+                        <td>
+                            <span class="quantity-status" id="status-${item.id}"></span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            itemsHtml += `
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-end">
+                    <h5>Total Cost: $${data.total_cost.toFixed(2)}</h5>
+                </div>
+            `;
+            
+            document.getElementById('requestItemsModalBody').innerHTML = itemsHtml;
+            
+            // Add event listeners for quantity updates
+            document.querySelectorAll('.update-quantity-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = this.dataset.itemId;
+                    const requestId = this.dataset.requestId;
+                    const input = document.querySelector(`input[data-item-id="${itemId}"]`);
+                    const newQuantity = parseInt(input.value);
+                    
+                    updateItemQuantity(itemId, requestId, newQuantity);
+                });
+            });
+        })
+        .catch(error => {
+            console.error('Error loading request items:', error);
+            let errorMessage = 'Error loading request items';
+            if (error.message) {
+                errorMessage += `: ${error.message}`;
+            }
+            document.getElementById('requestItemsModalBody').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${errorMessage}
+                </div>
+            `;
+        });
+}
+
+function updateItemQuantity(itemId, requestId, newQuantity) {
+    const statusSpan = document.getElementById(`status-${itemId}`);
+    const btn = document.querySelector(`button[data-item-id="${itemId}"]`);
+    const originalHtml = btn.innerHTML;
+    
+    // Show loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    statusSpan.innerHTML = '<small class="text-muted">Updating...</small>';
+    
+    fetch(`/admin/request/${requestId}/update_quantity`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            quantity: newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusSpan.innerHTML = `<small class="text-success"><i class="fas fa-check me-1"></i>${data.message}</small>`;
+            
+            // Update total cost display
+            const totalElement = document.querySelector('.text-end h5');
+            if (totalElement) {
+                totalElement.textContent = `Total Cost: $${data.new_total_cost.toFixed(2)}`;
+            }
+            
+            // Auto-hide success message after 3 seconds
+            setTimeout(() => {
+                statusSpan.innerHTML = '';
+            }, 3000);
+        } else {
+            statusSpan.innerHTML = `<small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>${data.error}</small>`;
+        }
+    })
+    .catch(error => {
+        statusSpan.innerHTML = `<small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Error: ${error.message}</small>`;
+    })
+    .finally(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    });
+}
+
+function updateRequestStatus(requestId, action) {
+    document.getElementById('requestId').value = requestId;
+    document.getElementById('action').value = action;
+    
+    let actionText = action.charAt(0).toUpperCase() + action.slice(1);
+    document.querySelector('#updateStatusModal .modal-title').textContent = `${actionText} Request`;
+    
+    new bootstrap.Modal(document.getElementById('updateStatusModal')).show();
+}
+
+function sendToManager(requestId) {
+    if (confirm('Are you sure you want to send this request to the manager for approval?')) {
+        window.location.href = `/admin/request/${requestId}/approve?send_to_manager=true`;
+    }
+}
+
+$(document).ready(function() {
+    $('#updateStatusForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const requestId = $('#requestId').val();
+        const action = $('#action').val();
+        const adminNotes = $('#adminNotes').val();
+        
+        // Disable submit button
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Updating...');
+        
+        // Redirect to update status
+        const url = `/admin/request/${requestId}/${action}`;
+        const params = adminNotes ? `?notes=${encodeURIComponent(adminNotes)}` : '';
+        
+        window.location.href = url + params;
+    });
+});
+</script>
+{% endblock %} 

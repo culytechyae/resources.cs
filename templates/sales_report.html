@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-line me-2"></i>Sales Report</h2>
+                <a href="{{ url_for('reports') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Reports
+                </a>
+            </div>
+            
+            <!-- Sales Summary Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h6>Total Delivered Orders</h6>
+                            <h3>{{ delivered_requests|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h6>Total Revenue</h6>
+                            <h3>${{ "%.2f"|format(delivered_requests|sum(attribute='total_cost') or 0) }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h6>Average Order Value</h6>
+                            <h3>
+                                {% if delivered_requests|length > 0 %}
+                                    ${{ "%.2f"|format((delivered_requests|sum(attribute='total_cost') or 0) / delivered_requests|length) }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h6>Top Selling Month</h6>
+                            <h3>
+                                {% if monthly_sales %}
+                                    {% set max_month = monthly_sales|max(attribute='revenue') %}
+                                    ${{ "%.2f"|format(max_month.revenue or 0) }}
+                                {% else %}
+                                    $0.00
+                                {% endif %}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monthly Sales -->
+            {% if monthly_sales %}
+            <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-bar me-2"></i>Monthly Sales (Last 6 Months)
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Orders</th>
+                                    <th>Revenue</th>
+                                    <th>Average Order Value</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in monthly_sales %}
+                                <tr>
+                                    <td><strong>{{ sale.month }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ sale.orders }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(sale.revenue or 0) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if sale.orders > 0 %}
+                                            ${{ "%.2f"|format((sale.revenue or 0) / sale.orders) }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if sale.revenue and sale.revenue > 1000 %}
+                                            <span class="text-success"><i class="fas fa-arrow-up"></i> Excellent</span>
+                                        {% elif sale.revenue and sale.revenue > 500 %}
+                                            <span class="text-warning"><i class="fas fa-minus"></i> Good</span>
+                                        {% else %}
+                                            <span class="text-danger"><i class="fas fa-arrow-down"></i> Low</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Top Selling Items -->
+            {% if top_selling_items %}
+            <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-star me-2"></i>Top Selling Items
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Units Sold</th>
+                                    <th>Revenue</th>
+                                    <th>Average Price</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in top_selling_items %}
+                                <tr>
+                                    <td><strong>{{ item.name }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-success">{{ item.units_sold }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(item.revenue or 0) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if item.units_sold > 0 %}
+                                            ${{ "%.2f"|format((item.revenue or 0) / item.units_sold) }}
+                                        {% else %}
+                                            $0.00
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.revenue and item.revenue > 500 %}
+                                            <span class="text-success"><i class="fas fa-fire"></i> Hot Seller</span>
+                                        {% elif item.revenue and item.revenue > 200 %}
+                                            <span class="text-warning"><i class="fas fa-star"></i> Popular</span>
+                                        {% else %}
+                                            <span class="text-info"><i class="fas fa-chart-line"></i> Steady</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Recent Delivered Orders -->
+            {% if delivered_requests %}
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-check-circle me-2"></i>Recent Delivered Orders
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Total Cost</th>
+                                    <th>Delivery Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in delivered_requests[:10] %}
+                                <tr>
+                                    <td><strong>#{{ request.id }}</strong></td>
+                                    <td>{{ request.user.username }}</td>
+                                    <td>
+                                        <span class="text-success fw-bold">${{ "%.2f"|format(request.total_cost) }}</span>
+                                    </td>
+                                    <td>{{ request.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Delivered</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if not delivered_requests and not monthly_sales and not top_selling_items %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>No sales data available.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.5rem;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %} 

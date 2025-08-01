@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-user-tie me-2"></i>School Manager Dashboard
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ requests|length }}</h4>
+                            <p class="card-text">Pending Approval</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Requests Pending Manager Approval
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if requests %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>User</th>
+                                        <th>Total Cost</th>
+                                        <th>Created Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in requests %}
+                                    <tr>
+                                        <td>#{{ request.id }}</td>
+                                        <td>{{ request.user.username }}</td>
+                                        <td>${{ "%.2f"|format(request.total_cost) }}</td>
+                                        <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-warning">Pending Manager Approval</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="viewRequestItems({{ request.id }})">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                <a href="{{ url_for('update_request_status', request_id=request.id, action='approve') }}" 
+                                                   class="btn btn-sm btn-success">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </a>
+                                                <a href="{{ url_for('update_request_status', request_id=request.id, action='reject') }}" 
+                                                   class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5>No requests pending approval</h5>
+                            <p class="text-muted">All requests have been processed.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Items Modal -->
+<div class="modal fade" id="requestItemsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="requestItemsContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewRequestItems(requestId) {
+    fetch(`/admin/request/${requestId}/items`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+                return;
+            }
+            
+            let content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>User:</strong> ${data.user}</p>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Total Cost:</strong> $${data.total_cost}</p>
+                        <p><strong>Created:</strong> ${data.created_at}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Notes:</strong> ${data.notes || 'None'}</p>
+                        <p><strong>Admin Notes:</strong> ${data.admin_notes || 'None'}</p>
+                    </div>
+                </div>
+                <hr>
+                <h6>Requested Items:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Cost</th>
+                                <th>Total</th>
+                                <th>Available</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.items.forEach(item => {
+                content += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.description}</td>
+                        <td>${item.quantity}</td>
+                        <td>$${item.cost}</td>
+                        <td>$${(item.quantity * item.cost).toFixed(2)}</td>
+                        <td>${item.available_quantity}</td>
+                    </tr>
+                `;
+            });
+            
+            content += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('requestItemsContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('requestItemsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading request details');
+        });
+}
+</script>
+{% endblock %} 
