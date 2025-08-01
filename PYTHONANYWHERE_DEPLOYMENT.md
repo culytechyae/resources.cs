@@ -108,6 +108,29 @@ application = create_app()
 # This is the standard WSGI application object
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 3. **Save the file**
 
 ## Step 6: Configure Virtual Environment Path
