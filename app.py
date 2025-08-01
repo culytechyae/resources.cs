@@ -1461,9 +1461,6 @@ def register_routes(app):
             db.session.add(super_admin)
             db.session.commit()
         
-        # Initialize database manager
-        db_manager.load_current_database()
-        
         # Optimize database
         optimize_database()
 
