@@ -74,8 +74,8 @@ Fill in the configuration details:
 - **Region**: Choose closest to your users (e.g., US East for US users)
 
 **Build & Deploy Settings:**
-- **Build Command**: `pip install -r requirements_render.txt`
-- **Start Command**: `gunicorn wsgi:app`
+- **Build Command**: `pip install -r requirements_render_minimal.txt`
+- **Start Command**: `gunicorn wsgi_no_pandas:app`
 - **Plan**: `Free` (for testing)
 
 **Advanced Settings:**
