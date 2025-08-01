@@ -41,10 +41,17 @@ A comprehensive web application for managing school resources, inventory, and re
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose
+- Python 3.8 or higher
 - Git
 
-### Production Deployment
+### PythonAnywhere Deployment (Recommended)
+
+1. **Upload project files** to PythonAnywhere
+2. **Follow the detailed guide**: [PythonAnywhere Deployment Guide](PYTHONANYWHERE_DEPLOYMENT.md)
+3. **Configure WSGI** using the Web tab
+4. **Access your application** at your PythonAnywhere URL
+
+### Docker Production Deployment
 
 1. **Clone the repository**
    ```bash
@@ -88,20 +95,22 @@ A comprehensive web application for managing school resources, inventory, and re
 
 ```
 Resource/
-├── app.py                 # Main Flask application
-├── config.py             # Configuration management
-├── wsgi.py               # WSGI entry point
-├── requirements.txt      # Python dependencies
-├── Dockerfile           # Docker configuration
-├── docker-compose.yml   # Docker Compose setup
-├── nginx.conf          # Nginx reverse proxy
-├── deploy.sh           # Deployment script
-├── env.example         # Environment template
-├── templates/          # HTML templates
-├── static/            # Static files (CSS, JS)
-├── logs/              # Application logs
-├── uploads/           # File uploads
-└── data/              # Database files
+├── app.py                    # Main Flask application
+├── config.py                # Configuration management
+├── wsgi.py                  # WSGI entry point (general deployment)
+├── passenger_wsgi.py        # WSGI entry point (PythonAnywhere)
+├── requirements.txt         # Python dependencies
+├── Dockerfile              # Docker configuration
+├── docker-compose.yml      # Docker Compose setup
+├── nginx.conf             # Nginx reverse proxy
+├── deploy.sh              # Deployment script
+├── env.example            # Environment template
+├── PYTHONANYWHERE_DEPLOYMENT.md  # PythonAnywhere deployment guide
+├── templates/             # HTML templates
+├── static/               # Static files (CSS, JS)
+├── logs/                 # Application logs
+├── uploads/              # File uploads
+└── data/                 # Database files
 ```
 
 ## 🔧 Configuration
@@ -133,6 +142,29 @@ For Gmail:
 1. Enable 2-factor authentication
 2. Generate an App Password
 3. Use the App Password in `MAIL_PASSWORD`
+
+## 🌐 PythonAnywhere Deployment
+
+### Quick Setup
+
+1. **Upload files** to PythonAnywhere
+2. **Create virtual environment**:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. **Configure Web app** in PythonAnywhere Web tab:
+   - Choose "Manual configuration"
+   - Set virtual environment path
+   - Configure static files
+
+4. **Use the WSGI configuration** from `passenger_wsgi.py`
+
+5. **Set up environment variables** in `.env` file
+
+**For detailed instructions, see**: [PythonAnywhere Deployment Guide](PYTHONANYWHERE_DEPLOYMENT.md)
 
 ## 🐳 Docker Deployment
 
